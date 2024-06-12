@@ -1,0 +1,57 @@
+#include <HCSR04.h>
+
+byte triggerPin = 11;
+byte echoPin = 3;
+
+void setup () {
+  Serial.begin(9600);
+  HCSR04.begin(triggerPin, echoPin);
+}
+
+void loop () {
+  double* distances = HCSR04.measureDistanceCm();
+  
+  Serial.print(distances[0]);
+  Serial.println("---");
+  //delay(250);
+
+  if (distances[0] < 20 and distances[0] >0) {
+    // Si la distancia es menor a 20 cm, detenerse
+    moverAtras();
+    delay(1000);
+    girar();
+    delay(1000);
+
+  } else {
+    // Mover hacia adelante
+    moverAdelante();
+    
+  }
+}
+void moverAdelante() {
+  analogWrite(10, 0);
+  analogWrite(9, 100);
+  analogWrite(6, 100);
+  analogWrite(5, 0);
+}
+
+void moverAtras() {
+  analogWrite(10, 100);
+  analogWrite(9, 0);
+  analogWrite(6, 0);
+  analogWrite(5, 100);
+}
+
+void girar() {
+  analogWrite(10, 0);
+  analogWrite(9, 255);
+  analogWrite(6, 0);
+  analogWrite(5, 255);
+}
+
+void detener() {
+  analogWrite(10, 0);
+  analogWrite(9, 0);
+  analogWrite(6, 0);
+  analogWrite(5, 0);
+}
