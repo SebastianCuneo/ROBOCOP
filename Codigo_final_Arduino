@@ -1,0 +1,114 @@
+#include <HCSR04.h>
+
+const int relePin = 8;
+byte triggerPin = 11;
+byte echoPin = 3;
+
+
+unsigned long previousMillis = 0; // Para controlar el tiempo del relé
+const long interval = 1000; // Intervalo de 2 segundos
+
+bool releActivo = false;
+
+
+void setup() {
+  // Configuración de los pines como salidas
+  //10 y 9 mote der
+  pinMode(10, OUTPUT);
+  pinMode(9, OUTPUT);
+  //6 y 5 motor izq
+  pinMode(6, OUTPUT);
+  pinMode(5, OUTPUT);
+
+  pinMode(relePin, OUTPUT);
+
+  // Inicialmente, asegurarse de que el relé esté desactivado
+  digitalWrite(relePin, LOW);
+
+  Serial.begin(9600);
+  HCSR04.begin(triggerPin, echoPin);
+  
+    // activarRele();
+    // Serial.println("Relé activado");
+    // delay(2000);
+
+    // // Desactivar el relé durante 2 segundos
+    // desactivarRele();
+    // Serial.println("Relé desactivado");
+    // delay(2000);
+}
+
+void loop() {
+  unsigned long currentMillis = millis();
+
+  // Control del relé independientemente del movimiento del motor
+  if (currentMillis - previousMillis >= interval) {
+    previousMillis = currentMillis;
+
+    if (releActivo) {
+      desactivarRele();
+      Serial.println("Relé desactivado");
+    } else {
+      activarRele();
+      Serial.println("Relé activado");
+    }
+    releActivo = !releActivo;
+  }
+
+  double* distances = HCSR04.measureDistanceCm();
+  
+  Serial.print("1: ");
+  Serial.print(distances[0]);
+  Serial.println(" cm");
+  
+  Serial.println("---");
+
+  
+
+  if  ( distances[0] < 20 & distances[0] > 0   ) {
+    // Si la distancia es menor a 20 cm, detenerse
+    
+    moverAtras();
+    delay(1000);
+    girar();
+    delay(2000);
+  } else {
+    moverAdelante();
+  }
+}
+
+void activarRele() {
+  digitalWrite(relePin, HIGH); // Activar el relé (enciende el motor)
+}
+
+void desactivarRele() {
+  digitalWrite(relePin, LOW); // Desactivar el relé (apaga el motor)
+}
+
+void moverAdelante() {
+  analogWrite(10, 0);
+  analogWrite(9, 120);
+  analogWrite(6, 120);
+  analogWrite(5, 0);
+}
+
+void moverAtras() {
+  analogWrite(10, 120);
+  analogWrite(9, 0);
+  analogWrite(6, 0);
+  analogWrite(5, 120);
+}
+
+void girar() {
+  analogWrite(10, 30);
+  analogWrite(9, 0);
+  analogWrite(6, 0);
+  analogWrite(5, 200);
+}
+
+void detener() {
+  analogWrite(10, 0);
+  analogWrite(9, 0);
+  analogWrite(6, 0);
+  analogWrite(5, 0);
+}
